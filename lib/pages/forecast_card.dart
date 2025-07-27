@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'theme_provider.dart';
 
 class ForecastCard extends StatelessWidget {
   final Map<String, dynamic> forecast;
@@ -14,6 +16,7 @@ class ForecastCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return TweenAnimationBuilder(
       duration: Duration(milliseconds: 600 + (index * 200)),
       tween: Tween<double>(begin: 0, end: 1),
@@ -27,14 +30,21 @@ class ForecastCard extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withOpacity(0.15),
-                  Colors.white.withOpacity(0.05),
-                ],
+                colors: themeProvider.isDarkTheme
+                    ? [
+                        Colors.white.withOpacity(0.15),
+                        Colors.white.withOpacity(0.05),
+                      ]
+                    : [
+                        Colors.black.withOpacity(0.15),
+                        Colors.black.withOpacity(0.05),
+                      ],
               ),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: Colors.white.withOpacity(0.2),
+                color: themeProvider.isDarkTheme
+                    ? Colors.white.withOpacity(0.2)
+                    : Colors.black.withOpacity(0.2),
                 width: 1,
               ),
             ),
@@ -42,23 +52,14 @@ class ForecastCard extends StatelessWidget {
               children: [
                 Text(
                   forecast['day'],
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 12),
-                Icon(
-                  mapIconToIconData(forecast['icon']),
-                  color: Colors.white70,
-                  size: 36,
-                ),
+                Icon(mapIconToIconData(forecast['icon']), size: 36),
                 const SizedBox(height: 12),
                 Text(
                   forecast['temp'],
                   style: const TextStyle(
-                    color: Colors.white,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
@@ -66,10 +67,7 @@ class ForecastCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   forecast['description'],
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
-                    fontSize: 10,
-                  ),
+                  style: TextStyle(fontSize: 10),
                   textAlign: TextAlign.center,
                 ),
               ],

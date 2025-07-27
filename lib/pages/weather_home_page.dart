@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:math' as math;
+import 'package:provider/provider.dart';
 import 'weather_content.dart';
 import 'welcome_content.dart';
-import 'info_card.dart';
-import 'toggle_button.dart';
-import 'forecast_card.dart';
+import 'theme_provider.dart';
 
 class WeatherHomePage extends StatefulWidget {
   const WeatherHomePage({super.key});
@@ -81,53 +80,30 @@ class _WeatherHomePageState extends State<WeatherHomePage>
     );
 
     // Initialize animations
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
+    );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.elasticOut,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.elasticOut),
+        );
 
-    _rotationAnimation = Tween<double>(
-      begin: 0,
-      end: 2 * math.pi,
-    ).animate(CurvedAnimation(
-      parent: _rotationController,
-      curve: Curves.linear,
-    ));
+    _rotationAnimation = Tween<double>(begin: 0, end: 2 * math.pi).animate(
+      CurvedAnimation(parent: _rotationController, curve: Curves.linear),
+    );
 
-    _pulseAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.2,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+    _pulseAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
 
-    _temperatureAnimation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(
-      parent: _temperatureController,
-      curve: Curves.bounceOut,
-    ));
+    _temperatureAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _temperatureController, curve: Curves.bounceOut),
+    );
 
-    _cardAnimation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(
-      parent: _cardController,
-      curve: Curves.elasticOut,
-    ));
+    _cardAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _cardController, curve: Curves.elasticOut),
+    );
 
     // Start continuous animations
     _rotationController.repeat();
@@ -173,16 +149,17 @@ class _WeatherHomePageState extends State<WeatherHomePage>
           _forecast = List.generate(5, (index) {
             String forecastIcon = _getRandomIcon();
             return {
-              'temp': '${(data['main']['temp'] - index).toStringAsFixed(0)}°/${(data['main']['temp'] + 5).toStringAsFixed(0)}°',
+              'temp':
+                  '${(data['main']['temp'] - index).toStringAsFixed(0)}°/${(data['main']['temp'] + 5).toStringAsFixed(0)}°',
               'description': index == 0
                   ? 'Storm'
                   : index == 1
-                      ? 'Shower'
-                      : index == 2
-                          ? 'Rain'
-                          : index == 3
-                              ? 'Cloudy'
-                              : 'Sunny',
+                  ? 'Shower'
+                  : index == 2
+                  ? 'Rain'
+                  : index == 3
+                  ? 'Cloudy'
+                  : 'Sunny',
               'icon': forecastIcon,
               'day': _getDayName(index),
             };
@@ -267,21 +244,35 @@ class _WeatherHomePageState extends State<WeatherHomePage>
   }
 
   Color _getBackgroundGradientColor() {
-    if (_temperature == null) return const Color(0xFF1A1B23);
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    if (_temperature == null) {
+      return themeProvider.isDarkTheme
+          ? const Color(0xFF1A1B23)
+          : Colors.grey[200]!;
+    }
 
     if (_temperature! >= 30) {
-      return const Color(0xFF2D1B69); // Hot purple
+      return themeProvider.isDarkTheme
+          ? const Color(0xFF2D1B69)
+          : const Color(0xFFFED7D7);
     } else if (_temperature! >= 20) {
-      return const Color(0xFF1A472A); // Warm green
+      return themeProvider.isDarkTheme
+          ? const Color(0xFF1A472A)
+          : const Color(0xFFD4EFDF);
     } else if (_temperature! >= 10) {
-      return const Color(0xFF2C5282); // Cool blue
+      return themeProvider.isDarkTheme
+          ? const Color(0xFF2C5282)
+          : const Color(0xFFBFDBFE);
     } else {
-      return const Color(0xFF2A4365); // Cold dark blue
+      return themeProvider.isDarkTheme
+          ? const Color(0xFF2A4365)
+          : const Color(0xFFDBEAFE);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       body: AnimatedContainer(
         duration: const Duration(milliseconds: 1000),
@@ -291,171 +282,209 @@ class _WeatherHomePageState extends State<WeatherHomePage>
             end: Alignment.bottomCenter,
             colors: [
               _getBackgroundGradientColor(),
-              const Color(0xFF1A1B23),
+              themeProvider.isDarkTheme
+                  ? const Color(0xFF1A1B23)
+                  : Colors.grey[100]!,
             ],
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header with animated title
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    AnimatedBuilder(
-                      animation: _pulseAnimation,
-                      builder: (context, child) {
-                        return Transform.scale(
-                          scale: _pulseAnimation.value,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: IconButton(
-                              icon: const Icon(Icons.menu, color: Colors.white70),
-                              onPressed: () {},
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 500),
-                      child: Text(
-                        _cityName.isNotEmpty ? _cityName : 'Weather Hub',
-                        key: ValueKey(_cityName),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Icons.location_on, color: Colors.white70),
-                        onPressed: () {},
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 30),
-                // Animated search field
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.white.withOpacity(0.1),
-                        Colors.white.withOpacity(0.05),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.2),
-                      width: 1,
-                    ),
-                  ),
-                  child: TextField(
-                    controller: _cityController,
-                    decoration: InputDecoration(
-                      labelText: 'Search for a city...',
-                      labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      suffixIcon: AnimatedBuilder(
-                        animation: _rotationAnimation,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header with animated title
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      AnimatedBuilder(
+                        animation: _pulseAnimation,
                         builder: (context, child) {
-                          return Transform.rotate(
-                            angle: _isLoading ? _rotationAnimation.value : 0,
-                            child: IconButton(
-                              icon: Icon(
-                                _isLoading ? Icons.refresh : Icons.search,
-                                color: Colors.white70,
+                          return Transform.scale(
+                            scale: _pulseAnimation.value,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: themeProvider.isDarkTheme
+                                    ? Colors.white.withOpacity(0.1)
+                                    : Colors.black.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              onPressed: _isLoading
-                                  ? null
-                                  : () {
-                                      if (_cityController.text.isNotEmpty) {
-                                        _fetchWeather(_cityController.text);
-                                      }
-                                    },
+                              child: IconButton(
+                                icon: const Icon(Icons.menu),
+                                onPressed: () {},
+                              ),
                             ),
                           );
                         },
                       ),
-                    ),
-                    style: const TextStyle(color: Colors.white),
-                    onSubmitted: (value) {
-                      if (value.isNotEmpty && !_isLoading) {
-                        _fetchWeather(value);
-                      }
-                    },
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 500),
+                        child: Text(
+                          _cityName.isNotEmpty ? _cityName : 'Weather Hub',
+                          key: ValueKey(_cityName),
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: themeProvider.isDarkTheme
+                              ? Colors.white.withOpacity(0.1)
+                              : Colors.black.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.location_on),
+                          onPressed: () {},
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 40),
-                // Weather content
-                Expanded(
-                  child: _isLoading
-                      ? const Center(
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  const SizedBox(height: 30),
+                  // Search field
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: themeProvider.isDarkTheme
+                            ? [
+                                Colors.white.withOpacity(0.1),
+                                Colors.white.withOpacity(0.05),
+                              ]
+                            : [
+                                Colors.black.withOpacity(0.1),
+                                Colors.black.withOpacity(0.05),
+                              ],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: themeProvider.isDarkTheme
+                            ? Colors.white.withOpacity(0.2)
+                            : Colors.black.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: TextField(
+                      controller: _cityController,
+                      decoration: InputDecoration(
+                        labelText: 'Search for a city...',
+                        labelStyle: TextStyle(
+                          color: themeProvider.isDarkTheme
+                              ? Colors.white.withOpacity(0.7)
+                              : Colors.black.withOpacity(0.7),
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
+                        suffixIcon: AnimatedBuilder(
+                          animation: _rotationAnimation,
+                          builder: (context, child) {
+                            return Transform.rotate(
+                              angle: _isLoading ? _rotationAnimation.value : 0,
+                              child: IconButton(
+                                icon: Icon(
+                                  _isLoading ? Icons.refresh : Icons.search,
+                                ),
+                                onPressed: _isLoading
+                                    ? null
+                                    : () {
+                                        if (_cityController.text.isNotEmpty) {
+                                          _fetchWeather(_cityController.text);
+                                        }
+                                      },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      style: TextStyle(
+                        color: themeProvider.isDarkTheme
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                      onSubmitted: (value) {
+                        if (value.isNotEmpty && !_isLoading) {
+                          _fetchWeather(value);
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  // Theme toggle button
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          themeProvider.isDarkTheme
+                              ? Icons.light_mode
+                              : Icons.dark_mode,
+                        ),
+                        onPressed: () {
+                          themeProvider.toggleTheme();
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  // Weather content
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _errorMessage.isNotEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.error_outline,
+                                color: Colors.red,
+                                size: 60,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                _errorMessage,
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 18,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
                         )
-                      : _errorMessage.isNotEmpty
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.error_outline,
-                                    color: Colors.red,
-                                    size: 60,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    _errorMessage,
-                                    style: const TextStyle(color: Colors.red, fontSize: 18),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ),
-                            )
-                          : _temperature != null
-                              ? WeatherContent(
-                                  temperature: _temperature!,
-                                  description: _description,
-                                  icon: _icon,
-                                  humidity: _humidity!,
-                                  windSpeed: _windSpeed!,
-                                  showToday: _showToday,
-                                  forecast: _forecast,
-                                  fadeAnimation: _fadeAnimation,
-                                  slideAnimation: _slideAnimation,
-                                  temperatureAnimation: _temperatureAnimation,
-                                  cardAnimation: _cardAnimation,
-                                  mapIconToIconData: _mapIconToIconData,
-                                  onToggleToday: () {
-                                    setState(() {
-                                      _showToday = true;
-                                    });
-                                  },
-                                  onToggleForecast: () {
-                                    setState(() {
-                                      _showToday = false;
-                                    });
-                                  },
-                                )
-                              : const WelcomeContent(),
-                ),
-              ],
+                      : _temperature != null
+                      ? WeatherContent(
+                          temperature: _temperature!,
+                          description: _description,
+                          icon: _icon,
+                          humidity: _humidity!,
+                          windSpeed: _windSpeed!,
+                          showToday: _showToday,
+                          forecast: _forecast,
+                          fadeAnimation: _fadeAnimation,
+                          slideAnimation: _slideAnimation,
+                          temperatureAnimation: _temperatureAnimation,
+                          cardAnimation: _cardAnimation,
+                          mapIconToIconData: _mapIconToIconData,
+                          onToggleToday: () {
+                            setState(() {
+                              _showToday = true;
+                            });
+                          },
+                          onToggleForecast: () {
+                            setState(() {
+                              _showToday = false;
+                            });
+                          },
+                        )
+                      : const WelcomeContent(),
+                ],
+              ),
             ),
           ),
         ),

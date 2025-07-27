@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'info_card.dart';
 import 'toggle_button.dart';
 import 'forecast_card.dart';
+import 'theme_provider.dart';
 
 class WeatherContent extends StatelessWidget {
   final double temperature;
@@ -39,6 +41,7 @@ class WeatherContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return FadeTransition(
       opacity: fadeAnimation,
       child: SlideTransition(
@@ -57,7 +60,9 @@ class WeatherContent extends StatelessWidget {
                       decoration: BoxDecoration(
                         gradient: RadialGradient(
                           colors: [
-                            Colors.white.withOpacity(0.1),
+                            themeProvider.isDarkTheme
+                                ? Colors.white.withOpacity(0.1)
+                                : Colors.black.withOpacity(0.1),
                             Colors.transparent,
                           ],
                         ),
@@ -72,9 +77,9 @@ class WeatherContent extends StatelessWidget {
                   );
                 },
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Temperature display
               AnimatedBuilder(
                 animation: temperatureAnimation,
@@ -85,10 +90,12 @@ class WeatherContent extends StatelessWidget {
                       children: [
                         Text(
                           '${temperature.round()}°',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 96,
                             fontWeight: FontWeight.w300,
-                            color: Colors.white,
+                            color: themeProvider.isDarkTheme
+                                ? Colors.white
+                                : Colors.black,
                           ),
                         ),
                         Text(
@@ -96,7 +103,9 @@ class WeatherContent extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 16,
                             letterSpacing: 2,
-                            color: Colors.white.withOpacity(0.8),
+                            color: themeProvider.isDarkTheme
+                                ? Colors.white.withOpacity(0.8)
+                                : Colors.black.withOpacity(0.8),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -105,9 +114,9 @@ class WeatherContent extends StatelessWidget {
                   );
                 },
               ),
-              
+
               const SizedBox(height: 30),
-              
+
               // Weather details cards
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -124,13 +133,15 @@ class WeatherContent extends StatelessWidget {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 30),
-              
+
               // Toggle buttons
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: themeProvider.isDarkTheme
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(25),
                 ),
                 child: Row(
@@ -149,9 +160,9 @@ class WeatherContent extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 30),
-              
+
               // Forecast cards
               AnimatedBuilder(
                 animation: cardAnimation,
@@ -166,14 +177,16 @@ class WeatherContent extends StatelessWidget {
                           children: forecast
                               .asMap()
                               .entries
-                              .map((entry) => Padding(
-                                    padding: const EdgeInsets.only(right: 16),
-                                    child: ForecastCard(
-                                      forecast: entry.value,
-                                      index: entry.key,
-                                      mapIconToIconData: mapIconToIconData,
-                                    ),
-                                  ))
+                              .map(
+                                (entry) => Padding(
+                                  padding: const EdgeInsets.only(right: 16),
+                                  child: ForecastCard(
+                                    forecast: entry.value,
+                                    index: entry.key,
+                                    mapIconToIconData: mapIconToIconData,
+                                  ),
+                                ),
+                              )
                               .toList(),
                         ),
                       ),

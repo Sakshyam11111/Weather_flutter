@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'theme_provider.dart';
 
 class InfoCard extends StatelessWidget {
   final String label;
@@ -14,40 +16,32 @@ class InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Colors.white.withOpacity(0.1),
-            Colors.white.withOpacity(0.05),
-          ],
+          colors: themeProvider.isDarkTheme
+              ? [Colors.white.withOpacity(0.1), Colors.white.withOpacity(0.05)]
+              : [Colors.black.withOpacity(0.1), Colors.black.withOpacity(0.05)],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: themeProvider.isDarkTheme
+              ? Colors.white.withOpacity(0.2)
+              : Colors.black.withOpacity(0.2),
           width: 1,
         ),
       ),
       child: Column(
         children: [
-          Icon(icon, color: Colors.white70, size: 30),
+          Icon(icon, size: 30),
           const SizedBox(height: 10),
           Text(
             value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
-              fontSize: 12,
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 12)),
         ],
       ),
     );

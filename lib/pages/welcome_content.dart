@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'theme_provider.dart';
 
 class WelcomeContent extends StatelessWidget {
   const WelcomeContent({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -20,7 +23,9 @@ class WelcomeContent extends StatelessWidget {
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: Colors.white.withOpacity(0.9),
+              color: themeProvider.isDarkTheme
+                  ? Colors.white.withOpacity(0.9)
+                  : Colors.black.withOpacity(0.9),
             ),
           ),
           const SizedBox(height: 16),
@@ -28,7 +33,9 @@ class WelcomeContent extends StatelessWidget {
             'Search for any city to get started',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.white.withOpacity(0.7),
+              color: themeProvider.isDarkTheme
+                  ? Colors.white.withOpacity(0.7)
+                  : Colors.black.withOpacity(0.7),
             ),
           ),
         ],
