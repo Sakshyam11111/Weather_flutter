@@ -4,6 +4,7 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
     // Add Google Services plugin for Firebase
     id("com.google.gms.google-services")
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -46,4 +47,5 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-crashlytics")
     implementation("com.google.firebase:firebase-firestore")
+    implementation platform('com.google.firebase:firebase-bom:34.0.0')
 }
