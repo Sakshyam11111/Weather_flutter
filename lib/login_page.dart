@@ -126,7 +126,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     borderRadius: BorderRadius.circular(100),
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.cloud,
                     size: 80,
                     color: Colors.amber,
@@ -204,7 +204,7 @@ class _LoginPageState extends State<LoginPage> {
                     padding: const EdgeInsets.only(bottom: 16),
                     child: Text(
                       _errorMessage,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.red,
                         fontSize: 14,
                         height: 1.5,

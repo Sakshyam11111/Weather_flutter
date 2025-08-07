@@ -2,15 +2,14 @@ plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
-    // Add Google Services plugin for Firebase
     id("com.google.gms.google-services")
-    id 'com.google.gms.google-services'
+    id("com.google.firebase.crashlytics") // Add this line
 }
 
 android {
     namespace = "com.example.weatherapp"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -18,12 +17,12 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = "11"
     }
 
     defaultConfig {
         applicationId = "com.example.weatherapp"
-        minSdk = flutter.minSdkVersion
+        minSdk = 23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -31,7 +30,6 @@ android {
 
     buildTypes {
         release {
-            // Use debug signing for now, as per TODO
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -42,10 +40,8 @@ flutter {
 }
 
 dependencies {
-    // Use Firebase BOM to manage library versions
-    implementation(platform("com.google.firebase:firebase-bom:33.2.0"))
+    implementation(platform("com.google.firebase:firebase-bom:34.0.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-crashlytics")
     implementation("com.google.firebase:firebase-firestore")
-    implementation platform('com.google.firebase:firebase-bom:34.0.0')
 }

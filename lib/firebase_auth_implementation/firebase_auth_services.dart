@@ -15,7 +15,7 @@ class FirebaseAuthServices {
       return credential.user;
     } on FirebaseAuthException catch (e) {
       print("Firebase Auth Error: ${e.code} - ${e.message}");
-      throw e; // Rethrow to handle specific errors in UI
+      rethrow; 
     } catch (e) {
       print("Unexpected error during signup: $e");
       throw Exception('Unexpected error during signup: $e');
@@ -34,7 +34,7 @@ class FirebaseAuthServices {
       return credential.user;
     } on FirebaseAuthException catch (e) {
       print("Firebase Auth Error: ${e.code} - ${e.message}");
-      throw e; // Rethrow to handle specific errors in UI
+      rethrow; // Rethrow to handle specific errors in UI
     } catch (e) {
       print("Unexpected error during login: $e");
       throw Exception('Unexpected error during login: $e');

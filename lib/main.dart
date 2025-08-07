@@ -9,12 +9,14 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:provider/provider.dart';
+import 'dart:async'; 
+
+
 import 'login_page.dart';
 import 'signup_page.dart';
 import 'glassmorphic_container.dart';
 import 'theme_provider.dart';
 import 'firebase_auth_implementation/firebase_auth_services.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -550,7 +552,7 @@ class WelcomeContent extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(100),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.wb_sunny,
                 size: 80,
                 color: Colors.amber,
@@ -705,50 +707,63 @@ class _WeatherHomePageState extends State<WeatherHomePage>
   }
 
   Future<void> _checkLocationPermissionAndFetch() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
 
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      setState(() {
-        _errorMessage = 'Location services are disabled.';
-      });
-      return;
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
         setState(() {
-          _errorMessage = 'Location permissions are denied.';
+          _errorMessage = 'Location services are disabled.';
+          _isLoading = false;
         });
         return;
       }
-    }
 
-    if (permission == LocationPermission.deniedForever) {
-      setState(() {
-        _errorMessage = 'Location permissions are permanently denied.';
-      });
-      return;
-    }
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          setState(() {
+            _errorMessage = 'Location permissions are denied.';
+            _isLoading = false;
+          });
+          return;
+        }
+      }
 
-    try {
+      if (permission == LocationPermission.deniedForever) {
+        setState(() {
+          _errorMessage = 'Location permissions are permanently denied.';
+          _isLoading = false;
+        });
+        return;
+      }
+
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
-      );
+      ).timeout(const Duration(seconds: 10), onTimeout: () {
+        throw TimeoutException('Location fetch timed out');
+      });
+
       List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude,
         position.longitude,
-      );
-      String city = placemarks.first.locality ?? 'Unknown';
+      ).timeout(const Duration(seconds: 10), onTimeout: () {
+        throw TimeoutException('Geocoding timed out');
+      });
+
+      String city = placemarks.isNotEmpty ? placemarks.first.locality ?? 'Unknown' : 'Unknown';
       _cityController.text = city;
       await _fetchWeather(city);
     } catch (e) {
       setState(() {
         _errorMessage = 'Failed to get location: $e';
+        _isLoading = false;
       });
+      print('Location error: $e');
     }
   }
 
@@ -765,16 +780,16 @@ class _WeatherHomePageState extends State<WeatherHomePage>
         'https://api.openweathermap.org/data/2.5/weather?q=$city&appid=$apiKey&units=metric';
 
     try {
-      final response = await http.get(Uri.parse(baseUrl));
+      final response = await http.get(Uri.parse(baseUrl)).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
-          _cityName = data['name'];
-          _temperature = data['main']['temp'].toDouble();
-          _description = data['weather'][0]['description'];
-          _icon = data['weather'][0]['icon'];
-          _humidity = data['main']['humidity'];
-          _windSpeed = data['wind']['speed'];
+          _cityName = data['name'] ?? '';
+          _temperature = data['main']['temp']?.toDouble();
+          _description = data['weather'][0]['description'] ?? '';
+          _icon = data['weather'][0]['icon'] ?? '';
+          _humidity = data['main']['humidity']?.toInt();
+          _windSpeed = data['wind']['speed']?.toDouble();
           _errorMessage = '';
           _isLoading = false;
 
@@ -791,8 +806,7 @@ class _WeatherHomePageState extends State<WeatherHomePage>
 
           _todayHourly = List.generate(8, (index) {
             final hour = (DateTime.now().hour + index) % 24;
-            final temp =
-                data['main']['temp'] + (math.Random().nextDouble() * 6 - 3);
+            final temp = data['main']['temp'] + (math.Random().nextDouble() * 6 - 3);
             return {
               'temp': '${temp.toStringAsFixed(0)}°',
               'icon': _getRandomIcon(),
@@ -838,6 +852,7 @@ class _WeatherHomePageState extends State<WeatherHomePage>
       });
       _rotationController.stop();
       _rotationController.reset();
+      print('Weather fetch error: $e');
     }
   }
 
@@ -943,6 +958,7 @@ class _WeatherHomePageState extends State<WeatherHomePage>
       setState(() {
         _errorMessage = 'Error signing out: $e';
       });
+      print('Logout error: $e');
     }
   }
 
@@ -974,8 +990,8 @@ class _WeatherHomePageState extends State<WeatherHomePage>
                       builder: (context, child) {
                         return Transform.scale(
                           scale: _breatheAnimation.value,
-                          child: GlassmorphicContainer(
-                            padding: const EdgeInsets.all(12),
+                          child: const GlassmorphicContainer(
+                            padding: EdgeInsets.all(12),
                             child: Icon(
                               Icons.menu_rounded,
                               size: 24,
@@ -1136,7 +1152,9 @@ class _WeatherHomePageState extends State<WeatherHomePage>
                               textAlign: TextAlign.center,
                             ),
                           )
-                        : _temperature != null
+                        : _temperature != null &&
+                                _humidity != null &&
+                                _windSpeed != null
                             ? WeatherContent(
                                 temperature: _temperature!,
                                 description: _description,

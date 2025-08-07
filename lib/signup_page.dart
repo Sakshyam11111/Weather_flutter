@@ -140,7 +140,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     borderRadius: BorderRadius.circular(100),
                   ),
-                  child: Icon(Icons.cloud, size: 80, color: Colors.amber),
+                  child: const Icon(Icons.cloud, size: 80, color: Colors.amber),
                 ),
                 const SizedBox(height: 16),
                 AnimatedTextKit(
@@ -276,7 +276,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     padding: const EdgeInsets.only(bottom: 16),
                     child: Text(
                       _errorMessage,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.red,
                         fontSize: 14,
                         height: 1.5,
